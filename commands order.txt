@@ -1,0 +1,14 @@
+# 1. Run blockchain
+npx hardhat node
+
+# 2. Deploy contract (in another terminal)
+npx hardhat run scripts/deploy.js --network localhost
+
+# 3. Run backend server (in another terminal)
+node server.js
+
+# 4. Run frontend (in another terminal)
+cd client
+npm install         # (if not done yet)
+set NODE_OPTIONS=--openssl-legacy-provider   # (if needed)
+npm start

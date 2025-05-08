@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./server
+    ports:
+      - "5000:5000"
+    environment:
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+    volumes:
+      - ./server/gcs-service-account.json:/app/gcs-service-account.json
+    depends_on:
+      - redis
+      - geth
+
+  frontend:
+    build: ./client
+    ports:
+      - "3000:80"  # React app will be served on port 3000 via Nginx
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  geth:
+    image: ethereum/client-go:latest
+    ports:
+      - "8545:8545"
+      - "30303:30303"
+    command: >
+      --dev
+      --http
+      --http.addr 0.0.0.0
+      --http.corsdomain "*"
+      --http.api eth,net,web3,personal
+      --cache 1024
+
+  solidity:
+    build: ./solidity
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: npx hardhat compile
+
+volumes:
+  redis_data:
